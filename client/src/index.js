@@ -1,17 +1,4 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App";
-
-const container = document.getElementById("root");
-const root = createRoot(container);
-
-root.render(<App />);
-
-
-App.js
-
-import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
