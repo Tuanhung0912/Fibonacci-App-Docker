@@ -22,3 +22,6 @@ jobs:
       - run: docker push kithung/multi-nginx
       - run: docker push kithung/multi-server
       - run: docker push kithung/multi-worker
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x '*.git*'

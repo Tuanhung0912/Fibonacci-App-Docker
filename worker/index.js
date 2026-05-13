@@ -1,5 +1,5 @@
-const keys = require('./keys');
-const redis = require('redis');
+const keys = require("./keys");
+const redis = require("redis");
 
 const redisClient = redis.createClient({
   socket: {
@@ -8,19 +8,17 @@ const redisClient = redis.createClient({
     reconnectStrategy: () => 1000,
   },
 });
+
 const sub = redisClient.duplicate();
+
+redisClient.connect();
+sub.connect();
 
 function fib(index) {
   if (index < 2) return 1;
   return fib(index - 1) + fib(index - 2);
 }
 
-// Connect and subscribe
-(async () => {
-  await redisClient.connect();
-  await sub.connect();
-
-  await sub.subscribe('insert', (message) => {
-    redisClient.hSet('values', message, fib(parseInt(message)));
-  });
-})();
+sub.subscribe("insert", (message) => {
+  redisClient.hSet("values", message, fib(parseInt(message)));
+});
