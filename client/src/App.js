@@ -1,35 +1,44 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import OtherPage from "./OtherPage";
 import Fib from "./Fib";
+
+function NavLink({ to, children }) {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  return (
+    <Link to={to} className={`nav-link ${isActive ? "active" : ""}`}>
+      {children}
+    </Link>
+  );
+}
+
+function AppContent() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <span className="nav-brand">Fibonacci</span>
+        <div className="nav-spacer" />
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/otherpage">Other Page</NavLink>
+      </header>
+      <main className="App-content">
+        <Routes>
+          <Route path="/" element={<Fib />} />
+          <Route path="/otherpage" element={<OtherPage />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p></p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <Link to="/">Home</Link>
-          <Link to="/otherpage">Other Page</Link>
-        </header>
-        <div>
-          <Routes>
-            <Route path="/" element={<Fib />} />
-            <Route path="/otherpage" element={<OtherPage />} />
-          </Routes>
-        </div>
-      </div>
+      <AppContent />
     </Router>
   );
 }
