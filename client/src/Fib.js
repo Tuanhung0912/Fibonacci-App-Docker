@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+// API base URL: dùng biến môi trường trên Render, fallback về "/api" cho Docker local
+const API_URL = process.env.REACT_APP_API_URL || "/api";
+
 const Fib = () => {
   const [seenIndexes, setSeenIndexes] = useState([]);
   const [values, setValues] = useState({});
@@ -12,19 +15,19 @@ const Fib = () => {
   }, []);
 
   const fetchValues = async () => {
-    const values = await axios.get("/api/values/current");
+    const values = await axios.get(`${API_URL}/values/current`);
     setValues(values.data);
   };
 
   const fetchIndexes = async () => {
-    const seenIndexes = await axios.get("/api/values/all");
+    const seenIndexes = await axios.get(`${API_URL}/values/all`);
     setSeenIndexes(seenIndexes.data);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    await axios.post("/api/values", {
+    await axios.post(`${API_URL}/values`, {
       index: index,
     });
     setIndex("");
