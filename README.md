@@ -1,6 +1,6 @@
 # Fibonacci Calculator - Multi-Container Docker Application
 
-A multi-container web application that calculates Fibonacci values using a React frontend, Express.js API server, and a background worker — orchestrated with Docker Compose and automated CI/CD via GitHub Actions.
+A multi-container web application that calculates Fibonacci values using a React frontend, Express.js API server, and a background worker — orchestrated with Docker Compose locally and deployed to **Render.com** cloud with CI/CD via GitHub Actions.
 
 ## 📋 Overview
 
@@ -97,6 +97,8 @@ complex/
 | Dev Tool     | Nodemon                    | 3.1.14  |
 | Container    | Docker + Docker Compose    | 3.8     |
 | CI/CD        | GitHub Actions             | —       |
+| Cloud Host   | Render.com                 | —       |
+| Cloud Redis  | Upstash                    | —       |
 
 ## 🚀 Getting Started
 
@@ -112,36 +114,54 @@ git clone https://github.com/Tuanhung0912/Fibonacci-App-Docker.git
 cd Fibonacci-App-Docker
 ```
 
-### 2. Run with Docker Compose
+### 2. Set up environment variables
+
+Create a `.env` file in the project root (see `.env` section below for required variables).
+
+### 3. Run with Docker Compose
 
 ```bash
 docker-compose up --build
 ```
 
-### 3. Access the application
+### 4. Access the application
 
 Open **http://localhost:3050** in your browser.
 
 ## 🔧 Environment Variables
 
+The app uses **dual-mode configuration** — environment variables determine whether to connect to local Docker services or cloud services.
+
 ### Server
 
-| Variable     | Description              |
-| ------------ | ------------------------ |
-| `REDIS_HOST` | Redis server hostname    |
-| `REDIS_PORT` | Redis server port        |
-| `PGUSER`     | PostgreSQL username      |
-| `PGHOST`     | PostgreSQL hostname      |
-| `PGDATABASE` | PostgreSQL database name |
-| `PGPASSWORD` | PostgreSQL password      |
-| `PGPORT`     | PostgreSQL port          |
+| Variable       | Docker Local | Render Cloud | Description |
+| -------------- | ------------ | ------------ | ----------- |
+| `REDIS_HOST`   | ✅           |              | Redis hostname |
+| `REDIS_PORT`   | ✅           |              | Redis port |
+| `REDIS_URL`    |              | ✅           | Upstash Redis connection URL |
+| `PGUSER`       | ✅           |              | PostgreSQL username |
+| `PGHOST`       | ✅           |              | PostgreSQL hostname |
+| `PGDATABASE`   | ✅           |              | PostgreSQL database name |
+| `PGPASSWORD`   | ✅           |              | PostgreSQL password |
+| `PGPORT`       | ✅           |              | PostgreSQL port |
+| `DATABASE_URL` |              | ✅           | PostgreSQL connection string |
+| `CLIENT_URL`   |              | ✅           | Allowed CORS origin |
+| `PORT`         |              | ✅           | Server port (Render assigns) |
 
 ### Worker
 
-| Variable     | Description           |
-| ------------ | --------------------- |
-| `REDIS_HOST` | Redis server hostname |
-| `REDIS_PORT` | Redis server port     |
+| Variable     | Docker Local | Render Cloud | Description |
+| ------------ | ------------ | ------------ | ----------- |
+| `REDIS_HOST` | ✅           |              | Redis hostname |
+| `REDIS_PORT` | ✅           |              | Redis port |
+| `REDIS_URL`  |              | ✅           | Upstash Redis connection URL |
+| `PORT`       |              | ✅           | Health check port (Render assigns) |
+
+### Client
+
+| Variable             | Docker Local | Render Cloud | Description |
+| -------------------- | ------------ | ------------ | ----------- |
+| `REACT_APP_API_URL`  |              | ✅           | Server URL (fallback: `/api`) |
 
 ## 📡 API Endpoints
 
@@ -207,6 +227,24 @@ On every push to `main`:
 - **Server/Worker**: `node:24-alpine` → `npm run start`
 - **Nginx**: Routes traffic between client and API
 
+## ☁️ Cloud Deployment (Render.com)
+
+The app is deployed to **Render.com** as a free-tier alternative to AWS (Elastic Beanstalk, RDS, ElastiCache).
+
+| Service | Render Type | Platform |
+| ------- | ----------- | -------- |
+| Client (React) | Static Site | Render |
+| Server (Express) | Web Service | Render |
+| Worker (Fibonacci) | Web Service | Render |
+| PostgreSQL | Managed Database | Render |
+| Redis | Managed Redis | Upstash (external) |
+
+**Key differences from Docker local:**
+- No Nginx — Render assigns each service its own HTTPS URL
+- Client calls server directly via `REACT_APP_API_URL`
+- Worker includes an Express health check endpoint (Render free tier requires HTTP)
+- All connections use **dual-mode config**: cloud URLs (`DATABASE_URL`, `REDIS_URL`) or local Docker vars — determined by which environment variables are set
+
 ## 📝 Notes
 
 - The Fibonacci calculation uses a **recursive algorithm**, so indices above 40 are rejected to prevent excessive computation time.
@@ -214,6 +252,7 @@ On every push to `main`:
 - PostgreSQL stores a permanent log of all submitted indices.
 - The client uses **React Hooks** (useState, useEffect) with functional components.
 - All environment variables are loaded from a `.env` file that is **git-ignored** to protect sensitive data.
+- One codebase supports both **Docker Compose (local)** and **Render.com (cloud)** without code changes.
 
 ## 📄 License
 
