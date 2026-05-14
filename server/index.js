@@ -6,18 +6,31 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const app = express();
-app.use(cors());
+
+// CORS - cho phép client từ domain khác gọi API
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "*",
+  methods: ["GET", "POST"],
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // Postgres Client Setup
 const { Pool } = require("pg");
-const pgClient = new Pool({
-  user: keys.pgUser,
-  host: keys.pgHost,
-  database: keys.pgDatabase,
-  password: keys.pgPassword,
-  port: keys.pgPort,
-});
+
+// Hỗ trợ cả DATABASE_URL (Render) và từng biến riêng (Docker local)
+const pgClient = keys.databaseUrl
+  ? new Pool({
+      connectionString: keys.databaseUrl,
+      ssl: { rejectUnauthorized: false },
+    })
+  : new Pool({
+      user: keys.pgUser,
+      host: keys.pgHost,
+      database: keys.pgDatabase,
+      password: keys.pgPassword,
+      port: keys.pgPort,
+    });
 
 pgClient.on("connect", (client) => {
   client
@@ -27,26 +40,31 @@ pgClient.on("connect", (client) => {
 
 // Redis Client Setup
 const redis = require("redis");
-const redisClient = redis.createClient({
-  url: `redis://${keys.redisHost}:${keys.redisPort}`,
-  retry_strategy: () => 1000,
-});
+
+// Hỗ trợ cả REDIS_URL (Upstash) và REDIS_HOST+PORT (Docker local)
+const redisConfig = keys.redisUrl
+  ? { url: keys.redisUrl }
+  : {
+      url: `redis://${keys.redisHost}:${keys.redisPort}`,
+      socket: { reconnectStrategy: () => 1000 },
+    };
+
+const redisClient = redis.createClient(redisConfig);
 const redisPublisher = redisClient.duplicate();
 
 (async () => {
   await redisClient.connect();
   await redisPublisher.connect();
+  console.log("Redis connected");
 })();
 
 // Express route handlers
-
 app.get("/", (req, res) => {
   res.send("Hi");
 });
 
 app.get("/values/all", async (req, res) => {
   const values = await pgClient.query("SELECT * from values");
-
   res.send(values.rows);
 });
 
@@ -69,6 +87,7 @@ app.post("/values", async (req, res) => {
   res.send({ working: true });
 });
 
-app.listen(5000, (err) => {
-  console.log("Listening");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
