@@ -7,13 +7,13 @@ spec:
   selector:
     matchLabels:
       component: web
-    template:
-      metadata:
-        labels:
-          component: web
-      spec:
-        containers:
-          - name: client
-            image: kithung56/multi-client
-            ports:
-              - containersPort: 3000
+  template:
+    metadata:
+      labels:
+        component: web
+    spec:
+      containers:
+        - name: client
+          image: kithung56/multi-client
+          ports:
+            - containerPort: 3000
