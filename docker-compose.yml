@@ -1,0 +1,63 @@
+services:
+  postgres:
+    container_name: fib-postgres
+    image: 'postgres:latest'
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+  redis:
+    container_name: fib-redis
+    image: 'redis:latest'
+    restart: always
+
+  server:
+    container_name: fib-server
+    image: 'kithung56/multi-server'
+    mem_limit: 128m
+    hostname: api
+    restart: on-failure
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - PGUSER=${PGUSER}
+      - PGHOST=${PGHOST}
+      - PGDATABASE=${PGDATABASE}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGPORT=${PGPORT}
+
+  worker:
+    container_name: fib-worker
+    image: 'kithung56/multi-worker'
+    mem_limit: 128m
+    hostname: worker
+    restart: on-failure
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+
+  client:
+    container_name: fib-client
+    image: 'kithung56/multi-client'
+    mem_limit: 128m
+    hostname: client
+    restart: on-failure
+
+  nginx:
+    container_name: fib-nginx
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    mem_limit: 128m
+    hostname: nginx
+    restart: always
+    depends_on:
+      - client
+      - server
+    ports:
+      - '80:80'
