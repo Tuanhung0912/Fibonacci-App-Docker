@@ -26,8 +26,11 @@ spec:
               mountPath: /var/lib/postgresql
               subPath: postgres
           env:
-            - name: POSTGRES_PASSWORD
-              value: postgres_password
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
           resources:
             limits:
               memory: '256Mi'
