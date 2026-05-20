@@ -14,6 +14,28 @@ spec:
     spec:
       containers:
         - name: server
-          image: kithung56/multi-server-dev
+          image: kithung56/multi-server
           ports:
             - containerPort: 5000
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGDATABASE
+              value: postgres
+            - name: PGPASSWORD
+              value: postgres_password
+            - name: PGPORT
+              value: '5432'
+          resources:
+            limits:
+              memory: '128Mi'
+              cpu: '250m'
+            requests:
+              memory: '64Mi'
+              cpu: '100m'
