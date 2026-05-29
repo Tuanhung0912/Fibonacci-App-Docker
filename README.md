@@ -11,36 +11,6 @@ Users enter an index through the web interface, and the application calculates t
 3. **Worker** listens for new indices via Redis Pub/Sub, calculates the Fibonacci value, and stores the result back in **Redis**
 4. **Client** fetches and displays both the submitted indices and calculated values
 
-## 🏗️ Architecture
-
-```
-                        ┌──────────────┐
-                        │    Nginx     │
-                        │ (Reverse     │
-                        │  Proxy)      │
-                        └──────┬───────┘
-                     ┌─────────┴─────────┐
-                     │ /                 │ /api
-              ┌──────▼──────┐     ┌──────▼──────┐     ┌──────────────┐
-              │   Client    │     │   Server    │────▶│  PostgreSQL  │
-              │  (React 19) │     │ (Express 5) │     │ (All Indices)│
-              └─────────────┘     └──────┬──────┘     └──────────────┘
-                                         │
-                                  Publish │ Subscribe
-                                         │
-                                  ┌──────▼──────┐
-                                  │    Redis    │
-                                  │  (Pub/Sub   │
-                                  │  + Cache)   │
-                                  └──────┬──────┘
-                                         │
-                                  ┌──────▼──────┐
-                                  │   Worker    │
-                                  │ (Fibonacci  │
-                                  │  Calculator)│
-                                  └─────────────┘
-```
-
 ## 📁 Project Structure
 
 ```
