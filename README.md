@@ -1,7 +1,5 @@
 # Fibonacci Calculator - Multi-Container Docker Application
 
-A multi-container web application that calculates Fibonacci values using a React frontend, Express.js API server, and a background worker — orchestrated with Docker Compose locally and deployed to **Render.com** cloud with CI/CD via GitHub Actions.
-
 ## 📋 Overview
 
 Users enter an index through the web interface, and the application calculates the corresponding Fibonacci value. The system uses a microservices architecture with the following flow:
